@@ -12,8 +12,6 @@ import type {
   EditorConfig,
   LexicalNode,
   NodeKey,
-  SerializedLexicalNode,
-  Spread,
 } from 'lexical';
 
 import katex from 'katex';
@@ -25,14 +23,6 @@ const EquationComponent = React.lazy(
   // @ts-ignore
   () => import('./EquationComponent'),
 );
-
-export type SerializedEquationNode = Spread<
-  {
-    equation: string;
-    inline: boolean;
-  },
-  SerializedLexicalNode
->;
 
 function convertEquationElement(
   domNode: HTMLElement,
@@ -65,23 +55,7 @@ export class EquationNode extends DecoratorNode<JSX.Element> {
     super(key);
     this.__equation = equation;
     this.__inline = inline ?? false;
-  }
-
-  static importJSON(serializedNode: SerializedEquationNode): EquationNode {
-    const node = $createEquationNode(
-      serializedNode.equation,
-      serializedNode.inline,
-    );
-    return node;
-  }
-
-  exportJSON(): SerializedEquationNode {
-    return {
-      equation: this.getEquation(),
-      inline: this.__inline,
-      type: 'equation',
-      version: 1,
-    };
+    return $applyNodeReplacement(this);
   }
 
   createDOM(_config: EditorConfig): HTMLElement {
@@ -166,8 +140,7 @@ export function $createEquationNode(
   equation = '',
   inline = false,
 ): EquationNode {
-  const equationNode = new EquationNode(equation, inline);
-  return $applyNodeReplacement(equationNode);
+  return new EquationNode(equation, inline);
 }
 
 export function $isEquationNode(

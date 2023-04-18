@@ -16,7 +16,6 @@ import type {
   LexicalEditor,
   LexicalNode,
   NodeKey,
-  SerializedElementNode,
 } from 'lexical';
 
 import {addClassNamesToElement} from '@lexical/utils';
@@ -29,8 +28,6 @@ import {
 import {$isTableCellNode} from './LexicalTableCellNode';
 import {$isTableRowNode, TableRowNode} from './LexicalTableRowNode';
 import {getTableGrid} from './LexicalTableSelectionHelpers';
-
-export type SerializedTableNode = SerializedElementNode;
 
 /** @noInheritDoc */
 export class TableNode extends DEPRECATED_GridNode {
@@ -54,20 +51,9 @@ export class TableNode extends DEPRECATED_GridNode {
     };
   }
 
-  static importJSON(_serializedNode: SerializedTableNode): TableNode {
-    return $createTableNode();
-  }
-
   constructor(key?: NodeKey) {
     super(key);
-  }
-
-  exportJSON(): SerializedElementNode {
-    return {
-      ...super.exportJSON(),
-      type: 'table',
-      version: 1,
-    };
+    return $applyNodeReplacement(this);
   }
 
   createDOM(config: EditorConfig, editor?: LexicalEditor): HTMLElement {
@@ -232,7 +218,7 @@ export function convertTableElement(_domNode: Node): DOMConversionOutput {
 }
 
 export function $createTableNode(): TableNode {
-  return $applyNodeReplacement(new TableNode());
+  return new TableNode();
 }
 
 export function $isTableNode(

@@ -239,7 +239,7 @@ export function syncPropertiesFromYjs(
   let writableNode;
 
   for (let i = 0; i < properties.length; i++) {
-    const property = properties[i];
+    const property = properties[i] as keyof LexicalNode;
 
     if (excludedProperties.has(property)) {
       continue;
@@ -280,7 +280,7 @@ export function syncPropertiesFromYjs(
         writableNode = lexicalNode.getWritable();
       }
 
-      writableNode[property] = nextValue;
+      writableNode[property as keyof LexicalNode] = nextValue;
     }
   }
 }
@@ -311,10 +311,10 @@ export function syncPropertiesFromLexical(
   const EditorClass = binding.editor.constructor;
 
   for (let i = 0; i < properties.length; i++) {
-    const property = properties[i];
+    const property = properties[i] as keyof LexicalNode;
     const prevValue =
       prevLexicalNode === null ? undefined : prevLexicalNode[property];
-    let nextValue = nextLexicalNode[property];
+    let nextValue: unknown = nextLexicalNode[property];
 
     if (prevValue !== nextValue) {
       if (nextValue instanceof EditorClass) {
@@ -344,6 +344,7 @@ export function syncPropertiesFromLexical(
       if (sharedType instanceof YMap) {
         sharedType.set(property, nextValue);
       } else {
+        // @ts-expect-error
         sharedType.setAttribute(property, nextValue);
       }
     }

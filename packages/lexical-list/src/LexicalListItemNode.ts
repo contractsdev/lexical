@@ -18,8 +18,6 @@ import type {
   NodeSelection,
   ParagraphNode,
   RangeSelection,
-  SerializedElementNode,
-  Spread,
 } from 'lexical';
 
 import {
@@ -46,14 +44,6 @@ import {
 } from './formatList';
 import {isNestedListNode} from './utils';
 
-export type SerializedListItemNode = Spread<
-  {
-    checked: boolean | undefined;
-    value: number;
-  },
-  SerializedElementNode
->;
-
 /** @noInheritDoc */
 export class ListItemNode extends ElementNode {
   /** @internal */
@@ -73,6 +63,7 @@ export class ListItemNode extends ElementNode {
     super(key);
     this.__value = value === undefined ? 1 : value;
     this.__checked = checked;
+    return $applyNodeReplacement(this);
   }
 
   createDOM(config: EditorConfig): HTMLElement {
@@ -123,23 +114,6 @@ export class ListItemNode extends ElementNode {
     };
   }
 
-  static importJSON(serializedNode: SerializedListItemNode): ListItemNode {
-    const node = new ListItemNode(serializedNode.value, serializedNode.checked);
-    node.setFormat(serializedNode.format);
-    node.setDirection(serializedNode.direction);
-    return node;
-  }
-
-  exportJSON(): SerializedListItemNode {
-    return {
-      ...super.exportJSON(),
-      checked: this.getChecked(),
-      type: 'listitem',
-      value: this.getValue(),
-      version: 1,
-    };
-  }
-
   append(...nodes: LexicalNode[]): this {
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
@@ -165,19 +139,37 @@ export class ListItemNode extends ElementNode {
     }
     this.setIndent(0);
     const list = this.getParentOrThrow();
-    if (!$isListNode(list)) return replaceWithNode;
-    if (list.__first === this.getKey()) {
-      list.insertBefore(replaceWithNode);
-    } else if (list.__last === this.getKey()) {
-      list.insertAfter(replaceWithNode);
-    } else {
-      // Split the list
-      const newList = $createListNode(list.getListType());
-      let nextSibling = this.getNextSibling();
-      while (nextSibling) {
-        const nodeToAppend = nextSibling;
-        nextSibling = nextSibling.getNextSibling();
-        newList.append(nodeToAppend);
+
+    if ($isListNode(list)) {
+      const childrenKeys = list.getChildrenKeys();
+      const childrenLength = childrenKeys.length;
+      const index = childrenKeys.indexOf(this.__key);
+
+      if (index === 0) {
+        list.insertBefore(replaceWithNode);
+      } else if (index === childrenLength - 1) {
+        list.insertAfter(replaceWithNode);
+      } else {
+        // Split the list
+        const newList = $createListNode(list.getListType());
+        const children = list.getChildren();
+
+        for (let i = index + 1; i < childrenLength; i++) {
+          const child = children[i];
+          newList.append(child);
+        }
+        list.insertAfter(replaceWithNode);
+        replaceWithNode.insertAfter(newList);
+      }
+      if (includeChildren && $isElementNode(replaceWithNode)) {
+        this.getChildren().forEach((child: LexicalNode) => {
+          replaceWithNode.append(child);
+        });
+      }
+      this.remove();
+
+      if (childrenLength === 1) {
+        list.remove();
       }
       list.insertAfter(replaceWithNode);
       replaceWithNode.insertAfter(newList);
@@ -533,7 +525,7 @@ function convertListItemElement(domNode: Node): DOMConversionOutput {
  * @returns The new List Item.
  */
 export function $createListItemNode(checked?: boolean): ListItemNode {
-  return $applyNodeReplacement(new ListItemNode(undefined, checked));
+  return new ListItemNode(undefined, checked);
 }
 
 /**

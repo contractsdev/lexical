@@ -51,11 +51,6 @@ import {
 
 export type NodeMap = Map<NodeKey, LexicalNode>;
 
-export type SerializedLexicalNode = {
-  type: string;
-  version: number;
-};
-
 export function removeNode(
   nodeToRemove: LexicalNode,
   restoreSelection: boolean,
@@ -155,8 +150,6 @@ export type DOMExportOutput = {
 export type NodeKey = string;
 
 export class LexicalNode {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [x: string]: any;
   /** @internal */
   __type: string;
   /** @internal */
@@ -473,7 +466,7 @@ export class LexicalNode {
     const a = this.getParents();
     const b = node.getParents();
     if ($isElementNode(this)) {
-      a.unshift(this);
+      a.unshift(this as unknown as ElementNode);
     }
     if ($isElementNode(node)) {
       b.unshift(node);
@@ -778,30 +771,32 @@ export class LexicalNode {
     return {element};
   }
 
-  /**
-   * Controls how the this node is serialized to JSON. This is important for
-   * copy and paste between Lexical editors sharing the same namespace. It's also important
-   * if you're serializing to JSON for persistent storage somewhere.
-   * See [Serialization & Deserialization](https://lexical.dev/docs/concepts/serialization#lexical---html).
-   *
-   * */
-  exportJSON(): SerializedLexicalNode {
-    invariant(false, 'exportJSON: base method not extended');
-  }
-
-  /**
-   * Controls how the this node is deserialized from JSON. This is usually boilerplate,
-   * but provides an abstraction between the node implementation and serialized interface that can
-   * be important if you ever make breaking changes to a node schema (by adding or removing properties).
-   * See [Serialization & Deserialization](https://lexical.dev/docs/concepts/serialization#lexical---html).
-   *
-   * */
-  static importJSON(_serializedNode: SerializedLexicalNode): LexicalNode {
-    invariant(
-      false,
-      'LexicalNode: Node %s does not implement .importJSON().',
-      this.name,
+  exportJSON() {
+    let serializedNode = JSON.parse(JSON.stringify(this.getLatest()));
+    delete serializedNode.__first;
+    delete serializedNode.__last;
+    delete serializedNode.__size;
+    delete serializedNode.__parent;
+    delete serializedNode.__next;
+    delete serializedNode.__prev;
+    delete serializedNode.__cachedText;
+    delete serializedNode.__key;
+    delete serializedNode.__dir;
+    serializedNode = Object.fromEntries(
+      Object.entries(serializedNode).map(([k, v]) => [k.replace(/^__/, ''), v]),
     );
+    if ($isElementNode(this)) {
+      serializedNode = {children: [], ...serializedNode};
+      serializedNode.direction = this.getDirection();
+      serializedNode.format = this.getFormatType();
+      serializedNode.indent = this.getIndent();
+    }
+    if ($isTextNode(this)) {
+      serializedNode.mode = this.getMode();
+    }
+    serializedNode.type = this.getType();
+    serializedNode.version = 1; // To-do: ¿What should I do with this?
+    return serializedNode;
   }
   /**
    * @experimental
@@ -872,7 +867,11 @@ export class LexicalNode {
     writableReplaceWith.__next = nextKey;
     writableReplaceWith.__parent = parentKey;
     writableParent.__size = size;
-    if (includeChildren) {
+    if (
+      includeChildren &&
+      $isElementNode(this) &&
+      $isElementNode(writableReplaceWith)
+    ) {
       this.getChildren().forEach((child: LexicalNode) => {
         writableReplaceWith.append(child);
       });

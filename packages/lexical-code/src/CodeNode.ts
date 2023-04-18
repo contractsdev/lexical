@@ -15,8 +15,6 @@ import type {
   NodeKey,
   ParagraphNode,
   RangeSelection,
-  SerializedElementNode,
-  Spread,
 } from 'lexical';
 import type {CodeHighlightNode} from '@lexical/code';
 
@@ -49,13 +47,6 @@ import {
   getFirstCodeHighlightNodeOfLine,
 } from './CodeHighlightNode';
 import * as Prism from 'prismjs';
-
-export type SerializedCodeNode = Spread<
-  {
-    language: string | null | undefined;
-  },
-  SerializedElementNode
->;
 
 const mapToPrismLanguage = (
   language: string | null | undefined,
@@ -94,6 +85,7 @@ export class CodeNode extends ElementNode {
   constructor(language?: string | null | undefined, key?: NodeKey) {
     super(key);
     this.__language = mapToPrismLanguage(language);
+    return $applyNodeReplacement(this);
   }
 
   // View
@@ -198,23 +190,6 @@ export class CodeNode extends ElementNode {
     };
   }
 
-  static importJSON(serializedNode: SerializedCodeNode): CodeNode {
-    const node = $createCodeNode(serializedNode.language);
-    node.setFormat(serializedNode.format);
-    node.setIndent(serializedNode.indent);
-    node.setDirection(serializedNode.direction);
-    return node;
-  }
-
-  exportJSON(): SerializedCodeNode {
-    return {
-      ...super.exportJSON(),
-      language: this.getLanguage(),
-      type: 'code',
-      version: 1,
-    };
-  }
-
   // Mutation
   insertNewAfter(
     selection: RangeSelection,
@@ -298,7 +273,7 @@ export class CodeNode extends ElementNode {
 export function $createCodeNode(
   language?: string | null | undefined,
 ): CodeNode {
-  return $applyNodeReplacement(new CodeNode(language));
+  return new CodeNode(language);
 }
 
 export function $isCodeNode(

@@ -6,20 +6,14 @@
  *
  */
 
-import type {LexicalNode, SerializedLexicalNode} from '../LexicalNode';
-import type {SerializedElementNode} from './LexicalElementNode';
+import type {LexicalNode} from '../LexicalNode';
 
 import invariant from 'shared/invariant';
 
 import {NO_DIRTY_NODES} from '../LexicalConstants';
 import {getActiveEditor, isCurrentlyReadOnlyMode} from '../LexicalUpdates';
-import {$getRoot} from '../LexicalUtils';
 import {$isDecoratorNode} from './LexicalDecoratorNode';
 import {$isElementNode, ElementNode} from './LexicalElementNode';
-
-export type SerializedRootNode<
-  T extends SerializedLexicalNode = SerializedLexicalNode,
-> = SerializedElementNode<T>;
 
 /** @noInheritDoc */
 export class RootNode extends ElementNode {
@@ -94,26 +88,6 @@ export class RootNode extends ElementNode {
       }
     }
     return super.append(...nodesToAppend);
-  }
-
-  static importJSON(serializedNode: SerializedRootNode): RootNode {
-    // We don't create a root, and instead use the existing root.
-    const node = $getRoot();
-    node.setFormat(serializedNode.format);
-    node.setIndent(serializedNode.indent);
-    node.setDirection(serializedNode.direction);
-    return node;
-  }
-
-  exportJSON(): SerializedRootNode {
-    return {
-      children: [],
-      direction: this.getDirection(),
-      format: this.getFormatType(),
-      indent: this.getIndent(),
-      type: 'root',
-      version: 1,
-    };
   }
 
   collapseAtStart(): true {

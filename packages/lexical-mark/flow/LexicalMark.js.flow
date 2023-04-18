@@ -7,17 +7,8 @@
  * @flow strict
  */
 
-import type {
-  NodeKey,
-  RangeSelection,
-  TextNode,
-  SerializedElementNode,
-} from 'lexical';
+import type {NodeKey, RangeSelection, TextNode} from 'lexical';
 import {ElementNode, LexicalNode} from 'lexical';
-
-export type SerializedMarkNode = SerializedElementNode & {
-  ids: Array<string>,
-};
 
 declare export class MarkNode extends ElementNode {
   __ids: Array<string>;

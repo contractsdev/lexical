@@ -57,10 +57,11 @@ export function $setBlocksType(
   }
 
   const nodes = selection.getNodes();
-  let maybeBlock = selection.anchor.getNode().getParentOrThrow();
-
-  if (nodes.indexOf(maybeBlock) === -1) {
-    nodes.push(maybeBlock);
+  if (selection.anchor.type === 'text') {
+    let firstBlock = selection.anchor.getNode().getParent();
+    firstBlock =
+      firstBlock && firstBlock.isInline() ? firstBlock.getParent() : firstBlock;
+    if (firstBlock && nodes.indexOf(firstBlock) === -1) nodes.push(firstBlock);
   }
 
   if (maybeBlock.isInline()) {
@@ -72,12 +73,8 @@ export function $setBlocksType(
   }
 
   for (let i = 0; i < nodes.length; i++) {
-    const node = nodes[i];
-
-    if (!isBlock(node)) {
-      continue;
-    }
-
+    const node = nodes[i] as ElementNode;
+    if (!isBlock(node)) continue;
     const targetElement = createElement();
     targetElement.setFormat(node.getFormatType());
     targetElement.setIndent(node.getIndent());
@@ -303,8 +300,8 @@ export function $wrapNodesImpl(
       }
     } else if (emptyElements.has(node.getKey())) {
       const targetElement = createElement();
-      targetElement.setFormat(node.getFormatType());
-      targetElement.setIndent(node.getIndent());
+      targetElement.setFormat((node as ElementNode).getFormatType());
+      targetElement.setIndent((node as ElementNode).getIndent());
       elements.push(targetElement);
       node.remove(true);
     }

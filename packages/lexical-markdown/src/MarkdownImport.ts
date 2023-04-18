@@ -24,7 +24,7 @@ import {
   $createParagraphNode,
   $createTextNode,
   $getRoot,
-  $getSelection,
+  $isElementNode,
   $isParagraphNode,
   $isTextNode,
   ElementNode,
@@ -156,7 +156,7 @@ function importBlocks(
         }
       }
 
-      if (targetNode != null && targetNode.getTextContentSize() > 0) {
+      if ($isElementNode(targetNode) && targetNode.getTextContentSize() > 0) {
         targetNode.splice(targetNode.getChildrenSize(), 0, [
           $createLineBreakNode(),
           ...elementNode.getChildren(),

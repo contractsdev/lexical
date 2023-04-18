@@ -13,9 +13,6 @@ import type {
   LexicalEditor,
   LexicalNode,
   RangeSelection,
-  SerializedElementNode,
-  SerializedLexicalNode,
-  SerializedTextNode,
 } from 'lexical';
 
 import {CodeHighlightNode, CodeNode} from '@lexical/code';
@@ -106,8 +103,6 @@ export function initializeClipboard() {
   });
 }
 
-export type SerializedTestElementNode = SerializedElementNode;
-
 export class TestElementNode extends ElementNode {
   static getType(): string {
     return 'test_block';
@@ -115,24 +110,6 @@ export class TestElementNode extends ElementNode {
 
   static clone(node: TestElementNode) {
     return new TestElementNode(node.__key);
-  }
-
-  static importJSON(
-    serializedNode: SerializedTestElementNode,
-  ): TestInlineElementNode {
-    const node = $createTestInlineElementNode();
-    node.setFormat(serializedNode.format);
-    node.setIndent(serializedNode.indent);
-    node.setDirection(serializedNode.direction);
-    return node;
-  }
-
-  exportJSON(): SerializedTestElementNode {
-    return {
-      ...super.exportJSON(),
-      type: 'test_block',
-      version: 1,
-    };
   }
 
   createDOM() {
@@ -148,8 +125,6 @@ export function $createTestElementNode(): TestElementNode {
   return new TestElementNode();
 }
 
-type SerializedTestTextNode = SerializedTextNode;
-
 export class TestTextNode extends TextNode {
   static getType() {
     return 'test_text';
@@ -159,22 +134,7 @@ export class TestTextNode extends TextNode {
     // @ts-ignore
     return new TestTextNode(node.__text, node.__key);
   }
-
-  static importJSON(serializedNode: SerializedTestTextNode): TestTextNode {
-    // @ts-ignore
-    return new TestTextNode(serializedNode.__text);
-  }
-
-  exportJSON(): SerializedTestTextNode {
-    return {
-      ...super.exportJSON(),
-      type: 'test_text',
-      version: 1,
-    };
-  }
 }
-
-export type SerializedTestInlineElementNode = SerializedElementNode;
 
 export class TestInlineElementNode extends ElementNode {
   static getType(): string {
@@ -183,24 +143,6 @@ export class TestInlineElementNode extends ElementNode {
 
   static clone(node: TestInlineElementNode) {
     return new TestInlineElementNode(node.__key);
-  }
-
-  static importJSON(
-    serializedNode: SerializedTestInlineElementNode,
-  ): TestInlineElementNode {
-    const node = $createTestInlineElementNode();
-    node.setFormat(serializedNode.format);
-    node.setIndent(serializedNode.indent);
-    node.setDirection(serializedNode.direction);
-    return node;
-  }
-
-  exportJSON(): SerializedTestInlineElementNode {
-    return {
-      ...super.exportJSON(),
-      type: 'test_inline_block',
-      version: 1,
-    };
   }
 
   createDOM() {
@@ -220,54 +162,6 @@ export function $createTestInlineElementNode(): TestInlineElementNode {
   return new TestInlineElementNode();
 }
 
-export type SerializedTestShadowRootNode = SerializedElementNode;
-
-export class TestShadowRootNode extends ElementNode {
-  static getType(): string {
-    return 'test_shadow_root';
-  }
-
-  static clone(node: TestShadowRootNode) {
-    return new TestElementNode(node.__key);
-  }
-
-  static importJSON(
-    serializedNode: SerializedTestShadowRootNode,
-  ): TestShadowRootNode {
-    const node = $createTestShadowRootNode();
-    node.setFormat(serializedNode.format);
-    node.setIndent(serializedNode.indent);
-    node.setDirection(serializedNode.direction);
-    return node;
-  }
-
-  exportJSON(): SerializedTestShadowRootNode {
-    return {
-      ...super.exportJSON(),
-      type: 'test_block',
-      version: 1,
-    };
-  }
-
-  createDOM() {
-    return document.createElement('div');
-  }
-
-  updateDOM() {
-    return false;
-  }
-
-  isShadowRoot() {
-    return true;
-  }
-}
-
-export function $createTestShadowRootNode(): TestShadowRootNode {
-  return new TestShadowRootNode();
-}
-
-export type SerializedTestSegmentedNode = SerializedTextNode;
-
 export class TestSegmentedNode extends TextNode {
   static getType(): string {
     return 'test_segmented';
@@ -276,32 +170,11 @@ export class TestSegmentedNode extends TextNode {
   static clone(node: TestSegmentedNode): TestSegmentedNode {
     return new TestSegmentedNode(node.__text, node.__key);
   }
-
-  static importJSON(
-    serializedNode: SerializedTestSegmentedNode,
-  ): TestSegmentedNode {
-    const node = $createTestSegmentedNode(serializedNode.text);
-    node.setFormat(serializedNode.format);
-    node.setDetail(serializedNode.detail);
-    node.setMode(serializedNode.mode);
-    node.setStyle(serializedNode.style);
-    return node;
-  }
-
-  exportJSON(): SerializedTestSegmentedNode {
-    return {
-      ...super.exportJSON(),
-      type: 'test_segmented',
-      version: 1,
-    };
-  }
 }
 
 export function $createTestSegmentedNode(text): TestSegmentedNode {
   return new TestSegmentedNode(text).setMode('segmented');
 }
-
-export type SerializedTestExcludeFromCopyElementNode = SerializedElementNode;
 
 export class TestExcludeFromCopyElementNode extends ElementNode {
   static getType(): string {
@@ -310,24 +183,6 @@ export class TestExcludeFromCopyElementNode extends ElementNode {
 
   static clone(node: TestExcludeFromCopyElementNode) {
     return new TestExcludeFromCopyElementNode(node.__key);
-  }
-
-  static importJSON(
-    serializedNode: SerializedTestExcludeFromCopyElementNode,
-  ): TestExcludeFromCopyElementNode {
-    const node = $createTestExcludeFromCopyElementNode();
-    node.setFormat(serializedNode.format);
-    node.setIndent(serializedNode.indent);
-    node.setDirection(serializedNode.direction);
-    return node;
-  }
-
-  exportJSON(): SerializedTestExcludeFromCopyElementNode {
-    return {
-      ...super.exportJSON(),
-      type: 'test_exclude_from_copy_block',
-      version: 1,
-    };
   }
 
   createDOM() {
@@ -347,8 +202,6 @@ export function $createTestExcludeFromCopyElementNode(): TestExcludeFromCopyElem
   return new TestExcludeFromCopyElementNode();
 }
 
-export type SerializedTestDecoratorNode = SerializedLexicalNode;
-
 export class TestDecoratorNode extends DecoratorNode<JSX.Element> {
   static getType(): string {
     return 'test_decorator';
@@ -356,20 +209,6 @@ export class TestDecoratorNode extends DecoratorNode<JSX.Element> {
 
   static clone(node: TestDecoratorNode) {
     return new TestDecoratorNode(node.__key);
-  }
-
-  static importJSON(
-    serializedNode: SerializedTestDecoratorNode,
-  ): TestDecoratorNode {
-    return $createTestDecoratorNode();
-  }
-
-  exportJSON(): SerializedTestDecoratorNode {
-    return {
-      ...super.exportJSON(),
-      type: 'test_decorator',
-      version: 1,
-    };
   }
 
   static importDOM() {

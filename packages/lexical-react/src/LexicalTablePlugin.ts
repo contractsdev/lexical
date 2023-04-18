@@ -54,9 +54,42 @@ export function TablePlugin(): JSX.Element | null {
         );
         $insertNodeToNearestRoot(tableNode);
 
-        const firstDescendant = tableNode.getFirstDescendant();
-        if ($isTextNode(firstDescendant)) {
-          firstDescendant.select();
+        if (!$isRangeSelection(selection)) {
+          return true;
+        }
+
+        const focus = selection.focus;
+        const focusNode = focus.getNode();
+
+        if (focusNode !== null) {
+          const tableNode = $createTableNodeWithDimensions(
+            Number(rows),
+            Number(columns),
+            includeHeaders,
+          );
+
+          if ($isRootOrShadowRoot(focusNode)) {
+            const target = (focusNode as ElementNode).getChildAtIndex(
+              focus.offset,
+            );
+
+            if (target !== null) {
+              target.insertBefore(tableNode);
+            } else {
+              (focusNode as ElementNode).append(tableNode);
+            }
+
+            tableNode.insertBefore($createParagraphNode());
+          } else {
+            const topLevelNode = focusNode.getTopLevelElementOrThrow();
+            topLevelNode.insertAfter(tableNode);
+          }
+
+          tableNode.insertAfter($createParagraphNode());
+          const firstCell = tableNode
+            .getFirstChildOrThrow<ElementNode>()
+            .getFirstChildOrThrow<ElementNode>();
+          firstCell.select();
         }
 
         return true;

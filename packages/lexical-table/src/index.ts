@@ -54,8 +54,17 @@ export {
   $insertTableRow,
   $insertTableRow__EXPERIMENTAL,
   $removeTableRowAtIndex,
-  $unmergeCell,
-} from './LexicalTableUtils';
+  applyTableHandlers,
+  Cell,
+  getCellFromTarget,
+  getTableSelectionFromTableElement,
+  HTMLTableElementWithWithTableSelectionState,
+  TableCellHeaderStates,
+  TableCellNode,
+  TableNode,
+  TableRowNode,
+  TableSelection,
+};
 
 export type InsertTableCommandPayloadHeaders =
   | Readonly<{

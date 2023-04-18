@@ -15,16 +15,7 @@ import {
   LexicalEditor,
   LexicalNode,
   NodeKey,
-  SerializedElementNode,
-  Spread,
 } from 'lexical';
-
-type SerializedCollapsibleContainerNode = Spread<
-  {
-    open: boolean;
-  },
-  SerializedElementNode
->;
 
 export function convertDetailsElement(
   domNode: HTMLDetailsElement,
@@ -87,26 +78,10 @@ export class CollapsibleContainerNode extends ElementNode {
     };
   }
 
-  static importJSON(
-    serializedNode: SerializedCollapsibleContainerNode,
-  ): CollapsibleContainerNode {
-    const node = $createCollapsibleContainerNode(serializedNode.open);
-    return node;
-  }
-
   exportDOM(): DOMExportOutput {
     const element = document.createElement('details');
     element.setAttribute('open', this.__open.toString());
     return {element};
-  }
-
-  exportJSON(): SerializedCollapsibleContainerNode {
-    return {
-      ...super.exportJSON(),
-      open: this.__open,
-      type: 'collapsible-container',
-      version: 1,
-    };
   }
 
   setOpen(open: boolean): void {

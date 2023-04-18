@@ -6,22 +6,9 @@
  *
  */
 
-import type {
-  LexicalNode,
-  NodeKey,
-  SerializedElementNode,
-  Spread,
-} from 'lexical';
+import type {LexicalNode, NodeKey} from 'lexical';
 
 import {ElementNode} from './LexicalElementNode';
-
-export type SerializedGridCellNode = Spread<
-  {
-    colSpan: number;
-    rowSpan: number;
-  },
-  SerializedElementNode
->;
 
 /** @noInheritDoc */
 export class DEPRECATED_GridCellNode extends ElementNode {
@@ -33,32 +20,6 @@ export class DEPRECATED_GridCellNode extends ElementNode {
     super(key);
     this.__colSpan = colSpan;
     this.__rowSpan = 1;
-  }
-
-  exportJSON(): SerializedGridCellNode {
-    return {
-      ...super.exportJSON(),
-      colSpan: this.__colSpan,
-      rowSpan: this.__rowSpan,
-    };
-  }
-
-  getColSpan(): number {
-    return this.__colSpan;
-  }
-
-  setColSpan(colSpan: number): this {
-    this.getWritable().__colSpan = colSpan;
-    return this;
-  }
-
-  getRowSpan(): number {
-    return this.__rowSpan;
-  }
-
-  setRowSpan(rowSpan: number): this {
-    this.getWritable().__rowSpan = rowSpan;
-    return this;
   }
 }
 

@@ -13,6 +13,7 @@ import {
   COMMAND_PRIORITY_EDITOR,
   createCommand,
   EditorThemeClasses,
+  ElementNode,
   Klass,
   LexicalCommand,
   LexicalEditor,
@@ -216,12 +217,45 @@ export function TablePlugin({
     return editor.registerCommand<InsertTableCommandPayload>(
       INSERT_NEW_TABLE_COMMAND,
       ({columns, rows, includeHeaders}) => {
-        const tableNode = $createTableNodeWithDimensions(
-          Number(rows),
-          Number(columns),
-          includeHeaders,
-        );
-        $insertNodes([tableNode]);
+        const selection = $getSelection();
+
+        if (!$isRangeSelection(selection)) {
+          return true;
+        }
+
+        const focus = selection.focus;
+        const focusNode = focus.getNode();
+
+        if (focusNode !== null) {
+          const tableNode = $createTableNodeWithDimensions(
+            Number(rows),
+            Number(columns),
+            includeHeaders,
+          );
+
+          if ($isRootOrShadowRoot(focusNode)) {
+            const target = (focusNode as ElementNode).getChildAtIndex(
+              focus.offset,
+            );
+
+            if (target !== null) {
+              target.insertBefore(tableNode);
+            } else {
+              (focusNode as ElementNode).append(tableNode);
+            }
+
+            tableNode.insertBefore($createParagraphNode());
+          } else {
+            const topLevelNode = focusNode.getTopLevelElementOrThrow();
+            topLevelNode.insertAfter(tableNode);
+          }
+
+          tableNode.insertAfter($createParagraphNode());
+          const nodeSelection = $createNodeSelection();
+          nodeSelection.add(tableNode.getKey());
+          $setSelection(nodeSelection);
+        }
+
         return true;
       },
       COMMAND_PRIORITY_EDITOR,

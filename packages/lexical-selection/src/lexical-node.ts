@@ -73,11 +73,14 @@ export function $cloneWithProperties<T extends LexicalNode>(node: T): T {
   clone.__prev = latest.__prev;
 
   if ($isElementNode(latest) && $isElementNode(clone)) {
-    return $updateElementNodeProperties(clone, latest);
+    return $updateElementNodeProperties(
+      clone,
+      latest as unknown as ElementNode,
+    );
   }
 
   if ($isTextNode(latest) && $isTextNode(clone)) {
-    return $updateTextNodeProperties(clone, latest);
+    return $updateTextNodeProperties(clone, latest as unknown as TextNode);
   }
 
   return clone;
@@ -140,11 +143,9 @@ export function $sliceSelectedTextNodeContent(
  * @returns true if the provided point offset is in the last possible position, false otherwise.
  */
 export function $isAtNodeEnd(point: Point): boolean {
-  if (point.type === 'text') {
-    return point.offset === point.getNode().getTextContentSize();
-  }
-
-  return point.offset === point.getNode().getChildrenSize();
+  const node = point.getNode();
+  if ($isElementNode(node)) return point.offset === node.getChildrenSize();
+  else return point.offset === node.getTextContentSize();
 }
 
 /**
@@ -186,7 +187,7 @@ export function trimTextContentFromAnchor(
         }
         parentSibling = parent.getPreviousSibling();
       }
-      if (parent !== null) {
+      if ($isElementNode(parent)) {
         additionalElementWhitespace = parent.isInline() ? 0 : 2;
         if ($isElementNode(parentSibling)) {
           nextNode = parentSibling.getLastDescendant();
